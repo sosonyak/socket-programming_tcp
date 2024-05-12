@@ -96,8 +96,16 @@ void recvThread(int sd) {
         if (param.broadcast){
             std::lock_guard<std::mutex> guard(mtx);
             for (int i = 0; i < clients.size(); ++i){
-                if (clients[i] != sd){
-                    ssize_t send_res = ::send(clients[i], buf, res, 0);
+                int clientSocket = clients[i];
+                if (clientSocket != sd) {
+                    int error = 0;
+                    socklen_t len = sizeof(error);
+                    if (getsockopt(clientSocket, SOL_SOCKET, SO_ERROR, &error, &len) != 0 || error != 0) {
+                        // fprintf(stderr, "Socket error or not valid: %d\n", clientSocket);
+                        continue;
+                    }
+
+                    ssize_t send_res = ::send(clientSocket, buf, res, 0);
                     if (send_res == -1){
                         myerror("send");
                     }
