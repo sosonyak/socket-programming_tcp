@@ -115,6 +115,15 @@ void recvThread(int sd) {
     }
     printf("disconnected\n");
     fflush(stdout);
+
+    {
+        std::lock_guard<std::mutex> guard(mtx);
+        auto it = std::find(clients.begin(), clients.end(), sd);
+        if (it != clients.end()) {
+            clients.erase(it);
+        }
+    }
+    
     ::close(sd);
 }
 
