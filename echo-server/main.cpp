@@ -181,7 +181,10 @@ int main(int argc, char* argv[]) {
             break;
         }
 
-        clients.push_back(newsd);
+        {
+            std::lock_guard<std::mutex> guard(mtx);
+            clients.push_back(newsd);
+        }
         std::thread* t = new std::thread(recvThread, newsd);
         t->detach();
     }
